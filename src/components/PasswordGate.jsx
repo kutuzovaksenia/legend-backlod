@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-const PASSWORD = 'ym2026'
+const PASSWORD = 'j~}sn4mIJuvr9Zw'
 const SESSION_KEY = 'ym_backlog_auth'
 
 export function useAuth() {
