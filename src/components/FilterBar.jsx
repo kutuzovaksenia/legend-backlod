@@ -1,12 +1,12 @@
-export function FilterBar({ teams, activeTeam, onChange, showArchive, onToggleArchive }) {
+export function FilterBar({ goals, activeGoal, onChange, showArchive, onToggleArchive }) {
   return (
     <div className="flex items-center justify-between gap-4 flex-wrap">
       <div className="flex items-center gap-2 flex-wrap">
-        {['', ...teams].map(t => {
-          const label = t || 'Все направления'
-          const active = activeTeam === t
+        {['', ...goals].map(g => {
+          const label = g || 'Все цели'
+          const active = activeGoal === g
           return (
-            <button key={label} onClick={() => onChange(t)}
+            <button key={label} onClick={() => onChange(g)}
               className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all whitespace-nowrap ${active ? 'bg-gray-900 text-white' : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'}`}>
               {label}
             </button>

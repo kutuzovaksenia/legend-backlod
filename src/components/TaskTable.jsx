@@ -4,12 +4,13 @@ import { restrictToVerticalAxis } from '@dnd-kit/modifiers'
 import { TaskRow } from './TaskRow'
 
 const COLUMNS = [
-  { key: 'title',     label: 'Задача' },
-  { key: 'team',      label: 'Команда' },
-  { key: 'assignee',  label: 'Ответственный' },
-  { key: 'status',    label: 'Статус' },
-  { key: 'due_date',  label: 'Готовность' },
-  { key: 'ticket_url',label: 'Тикет' },
+  { key: 'title',      label: 'Задача' },
+  { key: 'goals',      label: 'Цель' },
+  { key: 'assignee',   label: 'Лид' },
+  { key: 'status',     label: 'Статус' },
+  { key: 'complexity', label: 'Сложность' },
+  { key: 'due_date',   label: 'Готовность' },
+  { key: 'ticket_url', label: 'Тикет' },
 ]
 
 function SortIcon({ active, dir }) {
@@ -17,7 +18,7 @@ function SortIcon({ active, dir }) {
   return <span className="ml-1 text-xs">{dir === 'asc' ? '↑' : '↓'}</span>
 }
 
-export function TaskTable({ tasks, onUpdate, onArchive, onReorder, onEdit, sortKey, sortDir, onSort, teams }) {
+export function TaskTable({ tasks, onUpdate, onArchive, onReorder, onEdit, sortKey, sortDir, onSort, goals }) {
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }))
 
   const handleDragEnd = ({ active, over }) => {
@@ -34,7 +35,7 @@ export function TaskTable({ tasks, onUpdate, onArchive, onReorder, onEdit, sortK
   return (
     <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd} modifiers={[restrictToVerticalAxis]}>
       <div>
-        <table className="w-full min-w-[860px]">
+        <table className="w-full min-w-[960px]">
           <thead>
             <tr className="border-b border-gray-100">
               <th className="w-8" />
@@ -44,7 +45,7 @@ export function TaskTable({ tasks, onUpdate, onArchive, onReorder, onEdit, sortK
                 </button>
               </th>
               {COLUMNS.map(col => (
-                <th key={col.key} className={`px-3 py-2.5 text-left ${col.cls || ''}`}>
+                <th key={col.key} className="px-3 py-2.5 text-left">
                   <button onClick={() => onSort(col.key)} className="text-xs font-semibold text-gray-400 uppercase tracking-wider hover:text-gray-700 transition-colors whitespace-nowrap">
                     {col.label} <SortIcon active={sortKey === col.key} dir={sortDir} />
                   </button>
@@ -56,7 +57,7 @@ export function TaskTable({ tasks, onUpdate, onArchive, onReorder, onEdit, sortK
           <tbody>
             <SortableContext items={tasks.map(t => t.id)} strategy={verticalListSortingStrategy}>
               {tasks.map(task => (
-                <TaskRow key={task.id} task={task} onUpdate={onUpdate} onArchive={onArchive} onEdit={onEdit} teams={teams} />
+                <TaskRow key={task.id} task={task} onUpdate={onUpdate} onArchive={onArchive} onEdit={onEdit} goals={goals} />
               ))}
             </SortableContext>
           </tbody>

@@ -1,3 +1,5 @@
+import { GOAL_PALETTE, COMPLEXITY_META } from '../constants'
+
 export function PriorityBadge({ value }) {
   const meta = {
     'Высокий': { num: 1, bg: '#FF385C', text: '#fff' },
@@ -14,10 +16,9 @@ export function PriorityBadge({ value }) {
 
 export function StatusBadge({ value }) {
   const meta = {
-    'Бэклог':               { color: '#B0B0B0', bg: '#F5F5F5' },
-    'В работе':             { color: '#0070F3', bg: '#EBF4FF' },
-    'Ждём другие команды':  { color: '#7C3AED', bg: '#F3EEFF' },
-    'Готово':               { color: '#00A651', bg: '#E6F9EE' },
+    'Бэклог':   { color: '#B0B0B0', bg: '#F5F5F5' },
+    'В работе': { color: '#0070F3', bg: '#EBF4FF' },
+    'Готово':   { color: '#00A651', bg: '#E6F9EE' },
   }
   const m = meta[value] || meta['Бэклог']
   return (
@@ -28,12 +29,22 @@ export function StatusBadge({ value }) {
   )
 }
 
-export function TeamBadge({ value, teams = [] }) {
-  const PALETTE = ['#FF385C','#0070F3','#7C3AED','#00A651','#E6A800','#059669','#DC6F00','#0891B2']
-  const idx = teams.indexOf(value)
-  const c = idx >= 0 ? PALETTE[idx % PALETTE.length] : '#717171'
+export function GoalBadge({ value, goals = [] }) {
+  const idx = goals.indexOf(value)
+  const c = idx >= 0 ? GOAL_PALETTE[idx % GOAL_PALETTE.length] : '#717171'
   return (
-    <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium border" style={{ color: c, borderColor: c + '33', background: c + '0D' }}>
+    <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium border" style={{ color: c, borderColor: c + '44', background: c + '12' }}>
+      {value}
+    </span>
+  )
+}
+
+export function ComplexityBadge({ value }) {
+  const m = COMPLEXITY_META[value]
+  if (!m) return null
+  return (
+    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium" style={{ background: m.bg, color: m.color }}>
+      <span>{m.icon}</span>
       {value}
     </span>
   )
@@ -46,11 +57,10 @@ export function AssigneeBadge({ value }) {
   }
   if (!value) return <span className="text-sm text-gray-400">—</span>
   const c = colors[value] || '#717171'
-  const initials = value[0]
   return (
     <span className="inline-flex items-center gap-2">
       <span className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0" style={{ background: c }}>
-        {initials}
+        {value[0]}
       </span>
       <span className="text-sm text-gray-800">{value}</span>
     </span>

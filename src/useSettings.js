@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { DEFAULT_TEAMS } from './constants'
+import { DEFAULT_GOALS, DEFAULT_ASSIGNEES } from './constants'
 
 const KEY = 'ym_backlog_settings'
 
@@ -9,13 +9,22 @@ function load() {
 function save(s) { localStorage.setItem(KEY, JSON.stringify(s)) }
 
 export function useSettings() {
-  const [settings, setSettings] = useState(() => ({ teams: DEFAULT_TEAMS, ...load() }))
+  const [settings, setSettings] = useState(() => ({
+    goals: DEFAULT_GOALS,
+    assignees: DEFAULT_ASSIGNEES,
+    ...load(),
+  }))
 
-  const updateTeams = (teams) => {
-    const next = { ...settings, teams }
+  const update = (patch) => {
+    const next = { ...settings, ...patch }
     setSettings(next)
     save(next)
   }
 
-  return { teams: settings.teams, updateTeams }
+  return {
+    goals: settings.goals,
+    assignees: settings.assignees,
+    updateGoals: (goals) => update({ goals }),
+    updateAssignees: (assignees) => update({ assignees }),
+  }
 }

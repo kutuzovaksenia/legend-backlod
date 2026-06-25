@@ -7,19 +7,19 @@ import { AddTaskModal } from './components/AddTaskModal'
 import { SettingsModal } from './components/SettingsModal'
 import { PasswordGate, useAuth } from './components/PasswordGate'
 
-const PRIORITY_ORDER = { 'Высокий': 1, 'Средний': 2, 'Низкий': 3 }
-const STATUS_ORDER   = { 'В работе': 1, 'Ждём другие команды': 2, 'Бэклог': 3, 'Готово': 4 }
+const PRIORITY_ORDER  = { 'Высокий': 1, 'Средний': 2, 'Низкий': 3 }
+const COMPLEXITY_ORDER = { 'Быстро': 1, 'Средне': 2, 'Сложно': 3 }
 
 export default function App() {
   const { authed, login } = useAuth()
   const { tasks, loading, addTask, updateTask, archiveTask, reorderTasks } = useTasks()
-  const { teams, updateTeams } = useSettings()
+  const { goals, assignees, updateGoals, updateAssignees } = useSettings()
 
-  const [activeTeam, setActiveTeam] = useState('')
+  const [activeGoal, setActiveGoal] = useState('')
   const [showArchive, setShowArchive] = useState(false)
   const [modalTask, setModalTask] = useState(null)
   const [showSettings, setShowSettings] = useState(false)
-  const [sortKey, setSortKey] = useState('sort_order')
+  const [sortKey, setSortKey] = useState('auto')
   const [sortDir, setSortDir] = useState('asc')
 
   if (!authed) return <PasswordGate onLogin={login} />
@@ -31,18 +31,37 @@ export default function App() {
 
   const visibleTasks = useMemo(() => {
     let list = tasks.filter(t => showArchive ? t.archived : !t.archived)
-    if (activeTeam) list = list.filter(t => t.team === activeTeam)
-    if (sortKey !== 'sort_order') {
+    if (activeGoal) list = list.filter(t => {
+      const tg = t.goals ?? (t.team ? [t.team] : [])
+      return tg.includes(activeGoal)
+    })
+
+    // Default auto-sort: priority → multi-goal boost → complexity asc
+    if (sortKey === 'auto' || sortKey === 'sort_order') {
+      list = [...list].sort((a, b) => {
+        const pa = PRIORITY_ORDER[a.priority] ?? 9
+        const pb = PRIORITY_ORDER[b.priority] ?? 9
+        if (pa !== pb) return pa - pb
+        // multi-goal tasks rank higher within same priority
+        const ga = (a.goals ?? (a.team ? [a.team] : [])).length
+        const gb = (b.goals ?? (b.team ? [b.team] : [])).length
+        if (gb !== ga) return gb - ga
+        // easier tasks first
+        const ca = COMPLEXITY_ORDER[a.complexity] ?? 9
+        const cb = COMPLEXITY_ORDER[b.complexity] ?? 9
+        return ca - cb
+      })
+    } else {
       list = [...list].sort((a, b) => {
         let av = a[sortKey], bv = b[sortKey]
         if (sortKey === 'priority') { av = PRIORITY_ORDER[av] ?? 9; bv = PRIORITY_ORDER[bv] ?? 9 }
-        else if (sortKey === 'status') { av = STATUS_ORDER[av] ?? 9; bv = STATUS_ORDER[bv] ?? 9 }
+        else if (sortKey === 'complexity') { av = COMPLEXITY_ORDER[av] ?? 9; bv = COMPLEXITY_ORDER[bv] ?? 9 }
         else { av = av ?? ''; bv = bv ?? '' }
         return sortDir === 'asc' ? (av > bv ? 1 : -1) : (av < bv ? 1 : -1)
       })
     }
     return list
-  }, [tasks, activeTeam, showArchive, sortKey, sortDir])
+  }, [tasks, activeGoal, showArchive, sortKey, sortDir])
 
   const totalActive = tasks.filter(t => !t.archived && t.status !== 'Готово').length
   const totalDone   = tasks.filter(t => !t.archived && t.status === 'Готово').length
@@ -66,7 +85,7 @@ export default function App() {
           </div>
           <div className="flex items-center gap-2">
             <button onClick={() => setShowSettings(true)}
-              className="w-9 h-9 rounded-xl hover:bg-gray-100 flex items-center justify-center text-gray-400 hover:text-gray-600 transition-colors" title="Настройки направлений">
+              className="w-9 h-9 rounded-xl hover:bg-gray-100 flex items-center justify-center text-gray-400 hover:text-gray-600 transition-colors" title="Настройки">
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 10a2 2 0 100-4 2 2 0 000 4z" stroke="currentColor" strokeWidth="1.3"/><path d="M8 1v1.5M8 13.5V15M1 8h1.5M13.5 8H15M2.93 2.93l1.06 1.06M12.01 12.01l1.06 1.06M2.93 13.07l1.06-1.06M12.01 3.99l1.06-1.06" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></svg>
             </button>
             <button onClick={() => setModalTask(false)}
@@ -85,7 +104,7 @@ export default function App() {
         </div>
 
         <div className="mb-4">
-          <FilterBar teams={teams} activeTeam={activeTeam} onChange={setActiveTeam} showArchive={showArchive} onToggleArchive={setShowArchive} />
+          <FilterBar goals={goals} activeGoal={activeGoal} onChange={setActiveGoal} showArchive={showArchive} onToggleArchive={setShowArchive} />
         </div>
 
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-x-auto">
@@ -94,7 +113,7 @@ export default function App() {
           ) : (
             <TaskTable
               tasks={visibleTasks}
-              teams={teams}
+              goals={goals}
               onUpdate={updateTask}
               onArchive={archiveTask}
               onReorder={reorderTasks}
@@ -108,10 +127,13 @@ export default function App() {
       </main>
 
       {modalTask !== null && (
-        <AddTaskModal task={modalTask || null} teams={teams} onClose={() => setModalTask(null)} onAdd={addTask} onUpdate={updateTask} />
+        <AddTaskModal task={modalTask || null} goals={goals} assignees={assignees}
+          onClose={() => setModalTask(null)} onAdd={addTask} onUpdate={updateTask} />
       )}
       {showSettings && (
-        <SettingsModal teams={teams} onSave={updateTeams} onClose={() => setShowSettings(false)} />
+        <SettingsModal goals={goals} assignees={assignees}
+          onSaveGoals={updateGoals} onSaveAssignees={updateAssignees}
+          onClose={() => setShowSettings(false)} />
       )}
     </div>
   )

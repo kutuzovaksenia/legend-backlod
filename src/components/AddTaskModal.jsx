@@ -1,14 +1,24 @@
 import { useState } from 'react'
-import { ASSIGNEES, PRIORITIES, STATUSES } from '../constants'
+import { PRIORITIES, STATUSES, COMPLEXITY } from '../constants'
+import { GoalBadge } from './Badge'
 
-const defaults = { title: '', description: '', assignee: '', team: '', priority: 'Средний', status: 'Бэклог', due_date: '', ticket_url: '' }
+const defaults = { title: '', description: '', assignee: '', goals: [], priority: 'Средний', status: 'Бэклог', complexity: '', due_date: '', ticket_url: '' }
 
-export function AddTaskModal({ onClose, onAdd, onUpdate, task, teams = [] }) {
+export function AddTaskModal({ onClose, onAdd, onUpdate, task, goals = [], assignees = [] }) {
   const isEdit = !!task
-  const [form, setForm] = useState(isEdit ? { ...defaults, ...task, due_date: task.due_date ?? '' } : defaults)
+  const [form, setForm] = useState(isEdit
+    ? { ...defaults, ...task, goals: task.goals ?? (task.team ? [task.team] : []), due_date: task.due_date ?? '' }
+    : defaults)
   const [errors, setErrors] = useState({})
 
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }))
+
+  const toggleGoal = (g) => {
+    setForm(f => ({
+      ...f,
+      goals: f.goals.includes(g) ? f.goals.filter(x => x !== g) : [...f.goals, g]
+    }))
+  }
 
   const submit = () => {
     const e = {}
@@ -24,10 +34,10 @@ export function AddTaskModal({ onClose, onAdd, onUpdate, task, teams = [] }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6 z-10">
+      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6 z-10 max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between mb-5">
           <h2 className="text-lg font-semibold text-gray-900">{isEdit ? 'Редактировать задачу' : 'Новая задача'}</h2>
-          <button onClick={onClose} className="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-500 transition-colors">
+          <button onClick={onClose} className="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-500">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M12 4L4 12M4 4l8 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
           </button>
         </div>
@@ -43,30 +53,46 @@ export function AddTaskModal({ onClose, onAdd, onUpdate, task, teams = [] }) {
             maxLength={300} rows={2}
             className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:border-yellow-400 focus:ring-2 focus:ring-yellow-100 resize-none transition-colors" />
 
-          <div className="grid grid-cols-2 gap-3">
-            <select value={form.team} onChange={e => set('team', e.target.value)}
-              className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:border-yellow-400 bg-white transition-colors">
-              <option value="">Направление</option>
-              {teams.map(t => <option key={t}>{t}</option>)}
-            </select>
-            <div>
-              <select value={form.assignee} onChange={e => set('assignee', e.target.value)}
-                className={`w-full px-3 py-2.5 rounded-xl border text-sm outline-none focus:border-yellow-400 bg-white transition-colors ${errors.assignee ? 'border-red-400 bg-red-50' : 'border-gray-200'}`}>
-                <option value="">Кому *</option>
-                {ASSIGNEES.map(a => <option key={a}>{a}</option>)}
-              </select>
-              {errors.assignee && <p className="text-xs text-red-500 mt-1">Выбери исполнителя</p>}
+          {/* Goals multi-select */}
+          <div>
+            <p className="text-xs font-medium text-gray-500 mb-1.5">Цели {form.goals.length > 1 && <span className="text-yellow-600 font-semibold">↑ приоритет повышен</span>}</p>
+            <div className="flex flex-wrap gap-1.5">
+              {goals.map(g => {
+                const active = form.goals.includes(g)
+                return (
+                  <button key={g} onClick={() => toggleGoal(g)} type="button"
+                    className={`px-2.5 py-1 rounded-lg text-xs font-medium border transition-all ${active ? 'bg-gray-900 text-white border-gray-900' : 'border-gray-200 text-gray-600 hover:border-gray-400'}`}>
+                    {g}
+                  </button>
+                )
+              })}
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
+            <div>
+              <select value={form.assignee} onChange={e => set('assignee', e.target.value)}
+                className={`w-full px-3 py-2.5 rounded-xl border text-sm outline-none focus:border-yellow-400 bg-white transition-colors ${errors.assignee ? 'border-red-400 bg-red-50' : 'border-gray-200'}`}>
+                <option value="">Лид *</option>
+                {assignees.map(a => <option key={a}>{a}</option>)}
+              </select>
+              {errors.assignee && <p className="text-xs text-red-500 mt-1">Выбери лида</p>}
+            </div>
             <select value={form.priority} onChange={e => set('priority', e.target.value)}
               className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:border-yellow-400 bg-white transition-colors">
               {PRIORITIES.map(p => <option key={p}>{p}</option>)}
             </select>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
             <select value={form.status} onChange={e => set('status', e.target.value)}
               className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:border-yellow-400 bg-white transition-colors">
               {STATUSES.map(s => <option key={s}>{s}</option>)}
+            </select>
+            <select value={form.complexity} onChange={e => set('complexity', e.target.value)}
+              className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:border-yellow-400 bg-white transition-colors">
+              <option value="">Сложность</option>
+              {COMPLEXITY.map(c => <option key={c}>{c}</option>)}
             </select>
           </div>
 
