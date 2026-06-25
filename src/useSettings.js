@@ -1,30 +1,45 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { supabase } from './supabase'
 import { DEFAULT_GOALS, DEFAULT_ASSIGNEES } from './constants'
 
-const KEY = 'ym_backlog_settings'
+const LOCAL_KEY = 'ym_backlog_settings'
 
-function load() {
-  try { return JSON.parse(localStorage.getItem(KEY)) || {} } catch { return {} }
+function loadLocal() {
+  try { return JSON.parse(localStorage.getItem(LOCAL_KEY)) || {} } catch { return {} }
 }
-function save(s) { localStorage.setItem(KEY, JSON.stringify(s)) }
 
 export function useSettings() {
-  const [settings, setSettings] = useState(() => ({
-    goals: DEFAULT_GOALS,
-    assignees: DEFAULT_ASSIGNEES,
-    ...load(),
-  }))
+  const [goals, setGoals] = useState(() => loadLocal().goals ?? DEFAULT_GOALS)
+  const [assignees, setAssignees] = useState(() => loadLocal().assignees ?? DEFAULT_ASSIGNEES)
 
-  const update = (patch) => {
-    const next = { ...settings, ...patch }
-    setSettings(next)
-    save(next)
+  useEffect(() => {
+    if (!supabase) return
+    supabase.from('settings').select('key, value').in('key', ['goals', 'assignees']).then(({ data }) => {
+      if (!data) return
+      data.forEach(row => {
+        if (row.key === 'goals') setGoals(row.value)
+        if (row.key === 'assignees') setAssignees(row.value)
+      })
+    })
+  }, [])
+
+  const updateGoals = async (newGoals) => {
+    setGoals(newGoals)
+    if (supabase) {
+      await supabase.from('settings').upsert({ key: 'goals', value: newGoals })
+    } else {
+      localStorage.setItem(LOCAL_KEY, JSON.stringify({ ...loadLocal(), goals: newGoals }))
+    }
   }
 
-  return {
-    goals: settings.goals,
-    assignees: settings.assignees,
-    updateGoals: (goals) => update({ goals }),
-    updateAssignees: (assignees) => update({ assignees }),
+  const updateAssignees = async (newAssignees) => {
+    setAssignees(newAssignees)
+    if (supabase) {
+      await supabase.from('settings').upsert({ key: 'assignees', value: newAssignees })
+    } else {
+      localStorage.setItem(LOCAL_KEY, JSON.stringify({ ...loadLocal(), assignees: newAssignees }))
+    }
   }
+
+  return { goals, assignees, updateGoals, updateAssignees }
 }
