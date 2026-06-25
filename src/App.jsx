@@ -1,19 +1,28 @@
 import { useState, useMemo } from 'react'
 import { useTasks } from './store'
+import { useSettings } from './useSettings'
 import { FilterBar } from './components/FilterBar'
 import { TaskTable } from './components/TaskTable'
 import { AddTaskModal } from './components/AddTaskModal'
+import { SettingsModal } from './components/SettingsModal'
+import { PasswordGate, useAuth } from './components/PasswordGate'
 
 const PRIORITY_ORDER = { 'Высокий': 1, 'Средний': 2, 'Низкий': 3 }
-const STATUS_ORDER   = { 'В работе': 1, 'Ревью': 2, 'Бэклог': 3, 'Готово': 4 }
+const STATUS_ORDER   = { 'В работе': 1, 'Ждём другие команды': 2, 'Бэклог': 3, 'Готово': 4 }
 
 export default function App() {
+  const { authed, login } = useAuth()
   const { tasks, loading, addTask, updateTask, archiveTask, reorderTasks } = useTasks()
+  const { teams, updateTeams } = useSettings()
+
   const [activeTeam, setActiveTeam] = useState('')
   const [showArchive, setShowArchive] = useState(false)
-  const [modalTask, setModalTask] = useState(null)   // null = closed, false = new, task obj = edit
+  const [modalTask, setModalTask] = useState(null)
+  const [showSettings, setShowSettings] = useState(false)
   const [sortKey, setSortKey] = useState('sort_order')
   const [sortDir, setSortDir] = useState('asc')
+
+  if (!authed) return <PasswordGate onLogin={login} />
 
   const handleSort = (key) => {
     if (sortKey === key) setSortDir(d => d === 'asc' ? 'desc' : 'asc')
@@ -55,11 +64,17 @@ export default function App() {
               <div className="text-xs text-gray-400 mt-0.5">Яндекс Музыка · Маркетинг</div>
             </div>
           </div>
-          <button onClick={() => setModalTask(false)}
-            className="flex items-center gap-2 px-4 py-2 bg-[#FFDB4D] hover:bg-[#F5CC00] text-gray-900 text-sm font-semibold rounded-xl transition-colors">
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1v10M1 6h10" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>
-            Добавить задачу
-          </button>
+          <div className="flex items-center gap-2">
+            <button onClick={() => setShowSettings(true)}
+              className="w-9 h-9 rounded-xl hover:bg-gray-100 flex items-center justify-center text-gray-400 hover:text-gray-600 transition-colors" title="Настройки направлений">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 10a2 2 0 100-4 2 2 0 000 4z" stroke="currentColor" strokeWidth="1.3"/><path d="M8 1v1.5M8 13.5V15M1 8h1.5M13.5 8H15M2.93 2.93l1.06 1.06M12.01 12.01l1.06 1.06M2.93 13.07l1.06-1.06M12.01 3.99l1.06-1.06" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></svg>
+            </button>
+            <button onClick={() => setModalTask(false)}
+              className="flex items-center gap-2 px-4 py-2 bg-[#FFDB4D] hover:bg-[#F5CC00] text-gray-900 text-sm font-semibold rounded-xl transition-colors">
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1v10M1 6h10" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>
+              Добавить задачу
+            </button>
+          </div>
         </div>
       </header>
 
@@ -70,7 +85,7 @@ export default function App() {
         </div>
 
         <div className="mb-4">
-          <FilterBar activeTeam={activeTeam} onChange={setActiveTeam} showArchive={showArchive} onToggleArchive={setShowArchive} />
+          <FilterBar teams={teams} activeTeam={activeTeam} onChange={setActiveTeam} showArchive={showArchive} onToggleArchive={setShowArchive} />
         </div>
 
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-x-auto">
@@ -79,6 +94,7 @@ export default function App() {
           ) : (
             <TaskTable
               tasks={visibleTasks}
+              teams={teams}
               onUpdate={updateTask}
               onArchive={archiveTask}
               onReorder={reorderTasks}
@@ -92,12 +108,10 @@ export default function App() {
       </main>
 
       {modalTask !== null && (
-        <AddTaskModal
-          task={modalTask || null}
-          onClose={() => setModalTask(null)}
-          onAdd={addTask}
-          onUpdate={updateTask}
-        />
+        <AddTaskModal task={modalTask || null} teams={teams} onClose={() => setModalTask(null)} onAdd={addTask} onUpdate={updateTask} />
+      )}
+      {showSettings && (
+        <SettingsModal teams={teams} onSave={updateTeams} onClose={() => setShowSettings(false)} />
       )}
     </div>
   )

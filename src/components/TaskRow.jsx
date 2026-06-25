@@ -25,7 +25,7 @@ function TicketLink({ value }) {
   )
 }
 
-export function TaskRow({ task, onUpdate, onArchive, onEdit }) {
+export function TaskRow({ task, onUpdate, onArchive, onEdit, teams }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: task.id })
   const style = { transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.4 : 1 }
   const dateInfo = formatDate(task.due_date)
@@ -59,7 +59,7 @@ export function TaskRow({ task, onUpdate, onArchive, onEdit }) {
 
       {/* Team */}
       <td className="px-3 py-3 w-32">
-        {task.team ? <TeamBadge value={task.team} /> : <span className="text-gray-300">—</span>}
+        {task.team ? <TeamBadge value={task.team} teams={teams} /> : <span className="text-gray-300">—</span>}
       </td>
 
       {/* Assignee */}

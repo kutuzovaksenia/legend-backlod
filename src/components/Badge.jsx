@@ -14,10 +14,10 @@ export function PriorityBadge({ value }) {
 
 export function StatusBadge({ value }) {
   const meta = {
-    'Бэклог':   { color: '#B0B0B0', bg: '#F5F5F5' },
-    'В работе': { color: '#0070F3', bg: '#EBF4FF' },
-    'Ревью':    { color: '#7C3AED', bg: '#F3EEFF' },
-    'Готово':   { color: '#00A651', bg: '#E6F9EE' },
+    'Бэклог':               { color: '#B0B0B0', bg: '#F5F5F5' },
+    'В работе':             { color: '#0070F3', bg: '#EBF4FF' },
+    'Ждём другие команды':  { color: '#7C3AED', bg: '#F3EEFF' },
+    'Готово':               { color: '#00A651', bg: '#E6F9EE' },
   }
   const m = meta[value] || meta['Бэклог']
   return (
@@ -28,9 +28,10 @@ export function StatusBadge({ value }) {
   )
 }
 
-export function TeamBadge({ value }) {
-  const colors = { 'Маркетинг': '#FF385C', 'Гроус': '#0070F3', 'CRM': '#7C3AED', 'Продукт': '#00A651' }
-  const c = colors[value] || '#717171'
+export function TeamBadge({ value, teams = [] }) {
+  const PALETTE = ['#FF385C','#0070F3','#7C3AED','#00A651','#E6A800','#059669','#DC6F00','#0891B2']
+  const idx = teams.indexOf(value)
+  const c = idx >= 0 ? PALETTE[idx % PALETTE.length] : '#717171'
   return (
     <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium border" style={{ color: c, borderColor: c + '33', background: c + '0D' }}>
       {value}

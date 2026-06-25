@@ -1,9 +1,9 @@
 import { useState } from 'react'
-import { TEAMS, ASSIGNEES, PRIORITIES, STATUSES } from '../constants'
+import { ASSIGNEES, PRIORITIES, STATUSES } from '../constants'
 
 const defaults = { title: '', description: '', assignee: '', team: '', priority: 'Средний', status: 'Бэклог', due_date: '', ticket_url: '' }
 
-export function AddTaskModal({ onClose, onAdd, onUpdate, task }) {
+export function AddTaskModal({ onClose, onAdd, onUpdate, task, teams = [] }) {
   const isEdit = !!task
   const [form, setForm] = useState(isEdit ? { ...defaults, ...task, due_date: task.due_date ?? '' } : defaults)
   const [errors, setErrors] = useState({})
@@ -46,8 +46,8 @@ export function AddTaskModal({ onClose, onAdd, onUpdate, task }) {
           <div className="grid grid-cols-2 gap-3">
             <select value={form.team} onChange={e => set('team', e.target.value)}
               className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:border-yellow-400 bg-white transition-colors">
-              <option value="">Команда</option>
-              {TEAMS.map(t => <option key={t}>{t}</option>)}
+              <option value="">Направление</option>
+              {teams.map(t => <option key={t}>{t}</option>)}
             </select>
             <div>
               <select value={form.assignee} onChange={e => set('assignee', e.target.value)}

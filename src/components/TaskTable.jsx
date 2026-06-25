@@ -17,7 +17,7 @@ function SortIcon({ active, dir }) {
   return <span className="ml-1 text-xs">{dir === 'asc' ? '↑' : '↓'}</span>
 }
 
-export function TaskTable({ tasks, onUpdate, onArchive, onReorder, onEdit, sortKey, sortDir, onSort }) {
+export function TaskTable({ tasks, onUpdate, onArchive, onReorder, onEdit, sortKey, sortDir, onSort, teams }) {
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }))
 
   const handleDragEnd = ({ active, over }) => {
@@ -56,7 +56,7 @@ export function TaskTable({ tasks, onUpdate, onArchive, onReorder, onEdit, sortK
           <tbody>
             <SortableContext items={tasks.map(t => t.id)} strategy={verticalListSortingStrategy}>
               {tasks.map(task => (
-                <TaskRow key={task.id} task={task} onUpdate={onUpdate} onArchive={onArchive} onEdit={onEdit} />
+                <TaskRow key={task.id} task={task} onUpdate={onUpdate} onArchive={onArchive} onEdit={onEdit} teams={teams} />
               ))}
             </SortableContext>
           </tbody>

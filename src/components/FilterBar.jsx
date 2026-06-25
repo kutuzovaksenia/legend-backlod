@@ -1,11 +1,9 @@
-import { TEAMS } from '../constants'
-
-export function FilterBar({ activeTeam, onChange, showArchive, onToggleArchive, totalActive, totalDone }) {
+export function FilterBar({ teams, activeTeam, onChange, showArchive, onToggleArchive }) {
   return (
     <div className="flex items-center justify-between gap-4 flex-wrap">
       <div className="flex items-center gap-2 flex-wrap">
-        {['', ...TEAMS].map(t => {
-          const label = t || 'Все команды'
+        {['', ...teams].map(t => {
+          const label = t || 'Все направления'
           const active = activeTeam === t
           return (
             <button key={label} onClick={() => onChange(t)}
