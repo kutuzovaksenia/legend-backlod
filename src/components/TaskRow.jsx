@@ -48,12 +48,7 @@ export function TaskRow({ task, onUpdate, onArchive, onEdit, goals }) {
 
       {/* Priority */}
       <td className="px-2 py-2.5 w-9">
-        <div className="flex flex-col items-center gap-0.5">
-          <PriorityBadge value={task.priority} />
-          {taskGoals.length > 1 && (
-            <span className="text-[9px] font-bold text-amber-500 leading-none">×{taskGoals.length}</span>
-          )}
-        </div>
+        <PriorityBadge value={task.priority} />
       </td>
 
       {/* Title */}
