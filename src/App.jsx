@@ -22,8 +22,6 @@ export default function App() {
   const [sortKey, setSortKey] = useState('auto')
   const [sortDir, setSortDir] = useState('asc')
 
-  if (!authed) return <PasswordGate onLogin={login} />
-
   const handleSort = (key) => {
     if (sortKey === key) setSortDir(d => d === 'asc' ? 'desc' : 'asc')
     else { setSortKey(key); setSortDir('asc') }
@@ -65,6 +63,8 @@ export default function App() {
 
   const totalActive = tasks.filter(t => !t.archived && t.status !== 'Готово').length
   const totalDone   = tasks.filter(t => !t.archived && t.status === 'Готово').length
+
+  if (!authed) return <PasswordGate onLogin={login} />
 
   return (
     <div className="min-h-screen bg-[#F7F7F7]">
