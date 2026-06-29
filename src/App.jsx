@@ -6,6 +6,7 @@ import { TaskTable } from './components/TaskTable'
 import { AddTaskModal } from './components/AddTaskModal'
 import { SettingsModal } from './components/SettingsModal'
 import { PasswordGate, useAuth } from './components/PasswordGate'
+import { STATUSES, COMPLEXITY } from './constants'
 
 const PRIORITY_ORDER  = { 'Высокий': 1, 'Средний': 2, 'Низкий': 3 }
 const COMPLEXITY_ORDER = { 'Быстро': 1, 'Средне': 2, 'Сложно': 3 }
@@ -15,7 +16,8 @@ export default function App() {
   const { tasks, loading, addTask, updateTask, archiveTask, reorderTasks } = useTasks()
   const { goals, assignees, updateGoals, updateAssignees } = useSettings()
 
-  const [activeGoal, setActiveGoal] = useState('')
+  const [filterDimension, setFilterDimension] = useState('goals')
+  const [activeFilter, setActiveFilter] = useState('')
   const [showArchive, setShowArchive] = useState(false)
   const [modalTask, setModalTask] = useState(null)
   const [showSettings, setShowSettings] = useState(false)
@@ -27,12 +29,33 @@ export default function App() {
     else { setSortKey(key); setSortDir('asc') }
   }
 
+  const filterOptions = useMemo(() => {
+    if (filterDimension === 'goals') return goals
+    if (filterDimension === 'assignee') return assignees
+    if (filterDimension === 'status') return STATUSES
+    if (filterDimension === 'complexity') return COMPLEXITY
+    return []
+  }, [filterDimension, goals, assignees])
+
+  const handleDimensionChange = (dim) => {
+    setFilterDimension(dim)
+    setActiveFilter('')
+  }
+
   const visibleTasks = useMemo(() => {
     let list = tasks.filter(t => showArchive ? t.archived : !t.archived)
-    if (activeGoal) list = list.filter(t => {
-      const tg = t.goals ?? (t.team ? [t.team] : [])
-      return tg.includes(activeGoal)
-    })
+    if (activeFilter) {
+      list = list.filter(t => {
+        if (filterDimension === 'goals') {
+          const tg = t.goals ?? (t.team ? [t.team] : [])
+          return tg.includes(activeFilter)
+        }
+        if (filterDimension === 'assignee') return t.assignee === activeFilter
+        if (filterDimension === 'status') return t.status === activeFilter
+        if (filterDimension === 'complexity') return t.complexity === activeFilter
+        return true
+      })
+    }
 
     // Default auto-sort: priority → multi-goal boost → complexity asc
     if (sortKey === 'auto' || sortKey === 'sort_order') {
@@ -59,7 +82,7 @@ export default function App() {
       })
     }
     return list
-  }, [tasks, activeGoal, showArchive, sortKey, sortDir])
+  }, [tasks, activeFilter, filterDimension, showArchive, sortKey, sortDir])
 
   const totalActive = tasks.filter(t => !t.archived && t.status !== 'Готово').length
   const totalDone   = tasks.filter(t => !t.archived && t.status === 'Готово').length
@@ -104,7 +127,15 @@ export default function App() {
         </div>
 
         <div className="mb-4">
-          <FilterBar goals={goals} activeGoal={activeGoal} onChange={setActiveGoal} showArchive={showArchive} onToggleArchive={setShowArchive} />
+          <FilterBar
+            dimension={filterDimension}
+            onDimensionChange={handleDimensionChange}
+            options={filterOptions}
+            activeFilter={activeFilter}
+            onFilterChange={setActiveFilter}
+            showArchive={showArchive}
+            onToggleArchive={setShowArchive}
+          />
         </div>
 
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-x-auto">
