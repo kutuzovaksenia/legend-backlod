@@ -2,6 +2,7 @@ import { DndContext, closestCenter, PointerSensor, useSensor, useSensors } from 
 import { SortableContext, verticalListSortingStrategy, arrayMove } from '@dnd-kit/sortable'
 import { restrictToVerticalAxis } from '@dnd-kit/modifiers'
 import { TaskRow } from './TaskRow'
+import { STATUSES, STATUS_META } from '../constants'
 
 const COLUMNS = [
   { key: 'title',      label: 'Задача' },
@@ -56,9 +57,26 @@ export function TaskTable({ tasks, onUpdate, onArchive, onReorder, onEdit, sortK
           </thead>
           <tbody>
             <SortableContext items={tasks.map(t => t.id)} strategy={verticalListSortingStrategy}>
-              {tasks.map(task => (
-                <TaskRow key={task.id} task={task} onUpdate={onUpdate} onArchive={onArchive} onEdit={onEdit} goals={goals} />
-              ))}
+              {STATUSES.filter(status => tasks.some(t => t.status === status)).map(status => {
+                const group = tasks.filter(t => t.status === status)
+                const meta = STATUS_META[status] || STATUS_META['Бэклог']
+                return [
+                  <tr key={`group-${status}`}>
+                    <td colSpan={10} className="px-4 pt-4 pb-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-semibold px-2 py-0.5 rounded-full"
+                          style={{ color: meta.color, background: meta.bg }}>
+                          {status}
+                        </span>
+                        <span className="text-xs text-gray-400">{group.length}</span>
+                      </div>
+                    </td>
+                  </tr>,
+                  ...group.map(task => (
+                    <TaskRow key={task.id} task={task} onUpdate={onUpdate} onArchive={onArchive} onEdit={onEdit} goals={goals} />
+                  ))
+                ]
+              })}
             </SortableContext>
           </tbody>
         </table>

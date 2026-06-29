@@ -1,7 +1,7 @@
 export const DEFAULT_GOALS = ['Яндекс Пэй', 'Доработка инструментов', 'CRM']
 export const DEFAULT_ASSIGNEES = ['Ксюша', 'Лиза', 'Оля', 'Диана', 'Вася', 'Женя', 'Руслан']
 export const PRIORITIES = ['Высокий', 'Средний', 'Низкий']
-export const STATUSES = ['Бэклог', 'В работе', 'Готово']
+export const STATUSES = ['Бэклог', 'В работе', 'В разработке', 'Ревью', 'Готово']
 export const COMPLEXITY = ['Быстро', 'Средне', 'Сложно']
 
 export const PRIORITY_META = {
@@ -11,9 +11,11 @@ export const PRIORITY_META = {
 }
 
 export const STATUS_META = {
-  'Бэклог':   { color: '#717171', bg: '#F0F0F0' },
-  'В работе': { color: '#0070F3', bg: '#EBF4FF' },
-  'Готово':   { color: '#00A651', bg: '#E6F9EE' },
+  'Бэклог':       { color: '#717171', bg: '#F0F0F0' },
+  'В работе':     { color: '#0070F3', bg: '#EBF4FF' },
+  'В разработке': { color: '#7C3AED', bg: '#F3EEFF' },
+  'Ревью':        { color: '#E6A800', bg: '#FFFAE0' },
+  'Готово':       { color: '#00A651', bg: '#E6F9EE' },
 }
 
 export const COMPLEXITY_META = {
