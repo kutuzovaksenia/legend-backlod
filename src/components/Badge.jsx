@@ -16,13 +16,15 @@ export function PriorityBadge({ value }) {
 
 export function StatusBadge({ value }) {
   const meta = {
-    'Бэклог':   { color: '#B0B0B0', bg: '#F5F5F5' },
-    'В работе': { color: '#0070F3', bg: '#EBF4FF' },
-    'Готово':   { color: '#00A651', bg: '#E6F9EE' },
+    'Бэклог':       { color: '#B0B0B0', bg: '#F5F5F5' },
+    'В работе':     { color: '#0070F3', bg: '#EBF4FF' },
+    'В разработке': { color: '#7C3AED', bg: '#F3EEFF' },
+    'Ревью':        { color: '#E6A800', bg: '#FFFAE0' },
+    'Готово':       { color: '#00A651', bg: '#E6F9EE' },
   }
   const m = meta[value] || meta['Бэклог']
   return (
-    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium" style={{ background: m.bg, color: m.color }}>
+    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium whitespace-nowrap" style={{ background: m.bg, color: m.color }}>
       <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: m.color }} />
       {value}
     </span>
