@@ -2,7 +2,9 @@ import { DndContext, closestCenter, PointerSensor, useSensor, useSensors } from 
 import { SortableContext, verticalListSortingStrategy, arrayMove } from '@dnd-kit/sortable'
 import { restrictToVerticalAxis } from '@dnd-kit/modifiers'
 import { TaskRow } from './TaskRow'
-import { STATUSES, STATUS_META } from '../constants'
+import { STATUS_META } from '../constants'
+
+const STATUS_DISPLAY_ORDER = ['В работе', 'В разработке', 'Ревью', 'Бэклог', 'Готово']
 
 const COLUMNS = [
   { key: 'title',      label: 'Задача' },
@@ -24,9 +26,17 @@ export function TaskTable({ tasks, onUpdate, onArchive, onReorder, onEdit, sortK
 
   const handleDragEnd = ({ active, over }) => {
     if (!over || active.id === over.id) return
-    const oldIdx = tasks.findIndex(t => t.id === active.id)
-    const newIdx = tasks.findIndex(t => t.id === over.id)
-    onReorder(arrayMove(tasks, oldIdx, newIdx))
+    const activeTask = tasks.find(t => t.id === active.id)
+    const overTask = tasks.find(t => t.id === over.id)
+    if (!activeTask || !overTask) return
+    // если перетащили в другую статус-группу — меняем статус
+    if (activeTask.status !== overTask.status) {
+      onUpdate(activeTask.id, { status: overTask.status })
+    } else {
+      const oldIdx = tasks.findIndex(t => t.id === active.id)
+      const newIdx = tasks.findIndex(t => t.id === over.id)
+      onReorder(arrayMove(tasks, oldIdx, newIdx))
+    }
   }
 
   if (!tasks.length) return (
@@ -57,7 +67,7 @@ export function TaskTable({ tasks, onUpdate, onArchive, onReorder, onEdit, sortK
           </thead>
           <tbody>
             <SortableContext items={tasks.map(t => t.id)} strategy={verticalListSortingStrategy}>
-              {STATUSES.filter(status => tasks.some(t => t.status === status)).map(status => {
+              {STATUS_DISPLAY_ORDER.filter(status => tasks.some(t => t.status === status)).map(status => {
                 const group = tasks.filter(t => t.status === status)
                 const meta = STATUS_META[status] || STATUS_META['Бэклог']
                 return [
