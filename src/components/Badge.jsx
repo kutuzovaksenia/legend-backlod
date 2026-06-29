@@ -15,38 +15,36 @@ export function PriorityBadge({ value }) {
 }
 
 export function StatusBadge({ value }) {
-  const meta = {
-    'Бэклог':       { color: '#B0B0B0', bg: '#F5F5F5' },
-    'В работе':     { color: '#0070F3', bg: '#EBF4FF' },
-    'В разработке': { color: '#7C3AED', bg: '#F3EEFF' },
-    'Ревью':        { color: '#E6A800', bg: '#FFFAE0' },
-    'Готово':       { color: '#00A651', bg: '#E6F9EE' },
+  const dots = {
+    'Бэклог':       '#B0B0B0',
+    'В работе':     '#0070F3',
+    'В разработке': '#7C3AED',
+    'Ревью':        '#E6A800',
+    'Готово':       '#00A651',
   }
-  const m = meta[value] || meta['Бэклог']
+  const dot = dots[value] || dots['Бэклог']
   return (
-    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium whitespace-nowrap" style={{ background: m.bg, color: m.color }}>
-      <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: m.color }} />
+    <span className="inline-flex items-center gap-1.5 text-xs text-gray-600 whitespace-nowrap">
+      <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: dot }} />
       {value}
     </span>
   )
 }
 
-export function GoalBadge({ value, goals = [] }) {
-  const idx = goals.indexOf(value)
-  const c = idx >= 0 ? GOAL_PALETTE[idx % GOAL_PALETTE.length] : '#717171'
+export function GoalBadge({ value }) {
   return (
-    <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium border" style={{ color: c, borderColor: c + '44', background: c + '12' }}>
+    <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs text-gray-500 bg-gray-100">
       {value}
     </span>
   )
 }
 
 export function ComplexityBadge({ value }) {
-  const m = COMPLEXITY_META[value]
-  if (!m) return null
+  const icons = { 'Быстро': '⚡', 'Средне': '◑', 'Сложно': '◆' }
+  if (!value) return null
   return (
-    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium" style={{ background: m.bg, color: m.color }}>
-      <span>{m.icon}</span>
+    <span className="inline-flex items-center gap-1 text-xs text-gray-500">
+      <span>{icons[value]}</span>
       {value}
     </span>
   )
